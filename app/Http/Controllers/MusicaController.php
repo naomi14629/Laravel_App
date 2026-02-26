@@ -2,63 +2,78 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Musica;
 use Illuminate\Http\Request;
 
 class MusicaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Mostrar todas las canciones
     public function index()
     {
-        //
+        $canciones = Musica::where('mus_estado', 'A')->get();
+        return view('musica.index', ['canciones' => $canciones]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Mostrar formulario de creación
     public function create()
     {
-        //
+        return view('musica.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Guardar nueva canción
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'mus_titulo' => 'required|string|max:150',
+            'mus_artista' => 'required|string|max:100',
+            'mus_album' => 'nullable|string|max:100',
+            'mus_genero' => 'nullable|string|max:50',
+            'mus_duracion' => 'nullable|date_format:i:s',
+            'mus_creacion' => 'nullable|date_format:Y-m-d'
+        ]);
+
+        $data = $request->all();
+        $data['mus_estado'] = 'A';
+
+        Musica::create($data);
+
+        return redirect()->route('musica.index')
+                         ->with('success', 'Canción creada correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Mostrar formulario de edición
+    public function edit($id)
     {
-        //
+        $cancion = Musica::findOrFail($id);
+        return view('musica.edit', compact('cancion'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // Actualizar canción
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'mus_titulo' => 'required|string|max:150',
+            'mus_artista' => 'required|string|max:100',
+            'mus_album' => 'nullable|string|max:100',
+            'mus_genero' => 'nullable|string|max:50',
+            'mus_duracion' => 'nullable|date_format:i:s',
+            'mus_creacion' => 'nullable|date_format:Y-m-d'
+        ]);
+
+        $cancion = Musica::findOrFail($id);
+        $cancion->update($request->all());
+
+        return redirect()->route('musica.index')
+                         ->with('success', 'Canción actualizada correctamente.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Eliminar canción
+    public function destroy($id)
     {
-        //
-    }
+        $cancion = Musica::findOrFail($id);
+        $cancion->update(['mus_estado' => 'I']);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('musica.index')
+                         ->with('success', 'Canción eliminada correctamente.');
     }
 }
